@@ -1,0 +1,5 @@
+.env
+__pycache__/
+*.pyc
+backend
+qr_pdfs/
