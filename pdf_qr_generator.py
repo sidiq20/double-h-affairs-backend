@@ -18,7 +18,7 @@ from reportlab.lib.utils import ImageReader
 import tempfile
 
 class PDFQRGenerator:
-    def __init__(self, base_url="http://localhost:5173"):
+    def __init__(self, base_url="https://doublehaffairs.vercel.app"):
         self.base_url = base_url
         self.pdf_template_path = Path("DoubleHaffairs .pdf")
         

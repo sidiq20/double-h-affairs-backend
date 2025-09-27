@@ -12,7 +12,11 @@ import json
 from pdf_qr_generator import PDFQRGenerator
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins=[
+    "http://localhost:5173",
+    "http://localhost:5174", 
+    "https://doublehaffairs.vercel.app"
+])
 
 # MongoDB configuration
 MONGO_URI = os.environ.get('MONGO_URI', 'mongodb+srv://sidiqolasode_db_user:sEAD4FnMnaz1QlVl@double-h.dqoemjz.mongodb.net/?retryWrites=true&w=majority&appName=double-h')
@@ -22,7 +26,7 @@ qr_codes_collection = db['qr_codes']
 
 class QRCodeManager:
     def __init__(self):
-        self.base_url = os.environ.get('BASE_URL', 'http://localhost:5173')
+        self.base_url = os.environ.get('BASE_URL', 'https://doublehaffairs.vercel.app')
     
     def generate_bulk_qr_codes(self, count=200, generate_pdfs=False):
         """Generate bulk QR codes with unique IDs"""
@@ -174,7 +178,7 @@ class QRCodeManager:
 
 # Initialize QR manager and PDF QR generator
 qr_manager = QRCodeManager()
-pdf_qr_generator = PDFQRGenerator(base_url=os.environ.get('BASE_URL', 'http://localhost:5173'))
+pdf_qr_generator = PDFQRGenerator(base_url=os.environ.get('BASE_URL', 'https://doublehaffairs.vercel.app'))
 
 # API Routes
 @app.route('/api/generate', methods=['POST'])
