@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify
 from flask_cors import CORS
 from pymongo import MongoClient
 from bson import ObjectId
@@ -9,7 +9,6 @@ import base64
 import os
 from datetime import datetime
 import json
-from pdf_qr_generator import PDFQRGenerator
 
 app = Flask(__name__)
 CORS(app, origins=[
@@ -28,7 +27,7 @@ class QRCodeManager:
     def __init__(self):
         self.base_url = os.environ.get('BASE_URL', 'https://doublehaffairs.vercel.app')
     
-    def generate_bulk_qr_codes(self, count=200, generate_pdfs=False):
+    def generate_bulk_qr_codes(self, count=200):
         """Generate bulk QR codes with unique IDs"""
         codes = []
         
@@ -61,53 +60,13 @@ class QRCodeManager:
             img.save(buffer, format='PNG')
             img_base64 = base64.b64encode(buffer.getvalue()).decode()
             
-            code_data = {
+            codes.append({
                 "code_id": code_id,
                 "qr_number": i,
                 "qr_url": qr_url,
                 "qr_image_base64": img_base64,
                 "_id": str(result.inserted_id)
-            }
-            
-            # Generate PDF version if requested
-            if generate_pdfs:
-                pdf_result = pdf_qr_generator.embed_qr_in_pdf(code_id, i)
-                if pdf_result.get('success'):
-                    # Update MongoDB document with PDF info
-                    qr_codes_collection.update_one(
-                        {"code_id": code_id},
-                        {
-                            "$set": {
-                                "pdf_filename": pdf_result.get('filename'),
-                                "pdf_path": pdf_result.get('file_path'),
-                                "has_pdf": True,
-                                "pdf_generated_at": datetime.utcnow()
-                            }
-                        }
-                    )
-                    code_data.update({
-                        "pdf_filename": pdf_result.get('filename'),
-                        "pdf_path": pdf_result.get('file_path'),
-                        "has_pdf": True
-                    })
-                else:
-                    # Update MongoDB document with PDF error
-                    qr_codes_collection.update_one(
-                        {"code_id": code_id},
-                        {
-                            "$set": {
-                                "has_pdf": False,
-                                "pdf_error": pdf_result.get('error'),
-                                "pdf_generated_at": datetime.utcnow()
-                            }
-                        }
-                    )
-                    code_data.update({
-                        "has_pdf": False,
-                        "pdf_error": pdf_result.get('error')
-                    })
-            
-            codes.append(code_data)
+            })
         
         return codes
     
@@ -176,9 +135,8 @@ class QRCodeManager:
             "qr_number": qr_doc.get("qr_number")
         }
 
-# Initialize QR manager and PDF QR generator
+# Initialize QR manager
 qr_manager = QRCodeManager()
-pdf_qr_generator = PDFQRGenerator(base_url=os.environ.get('BASE_URL', 'https://doublehaffairs.vercel.app'))
 
 # API Routes
 @app.route('/api/generate', methods=['POST'])

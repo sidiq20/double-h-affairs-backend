@@ -11,11 +11,17 @@ from datetime import datetime
 import json
 
 app = Flask(__name__)
-CORS(app, origins=[
-    "http://localhost:5173",
-    "http://localhost:5174", 
-    "https://doublehaffairs.vercel.app"
-])
+CORS(app,
+        resources={r"/*": {
+        "origins": [
+            'http://localhost:5173',
+            'http://127.0.0.1:5173',
+         'https://doublehaffairs.vercel.app',
+         'https://*.vercel.app'
+        ]
+    }},
+    supports_credentials=True,
+)
 
 # MongoDB configuration
 MONGO_URI = os.environ.get('MONGO_URI', 'mongodb+srv://sidiqolasode_db_user:sEAD4FnMnaz1QlVl@double-h.dqoemjz.mongodb.net/?retryWrites=true&w=majority&appName=double-h')
